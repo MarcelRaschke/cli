@@ -8,6 +8,8 @@ export interface Payload {
   method: NeedleHttpVerbs;
   qs?: {};
   json?: boolean;
+  parse?: boolean;
   timeout?: number;
   family?: number;
+  noCompression?: boolean;
 }

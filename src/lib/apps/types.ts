@@ -1,3 +1,5 @@
+export type AppContext = 'tenant' | 'user';
+
 export interface IGetAppsURLOpts {
   orgId?: string;
   clientId?: string;
@@ -14,11 +16,12 @@ export interface ICreateAppResponse {
     id: string;
     attributes: {
       name: string;
-      clientId: string;
-      redirectUris: string[];
+      client_id: string;
+      redirect_uris: string[];
       scopes: string[];
-      isPublic: boolean;
-      clientSecret: string;
+      is_public: boolean;
+      client_secret: string;
+      access_token_ttl_seconds: number;
     };
     links: {
       self: string;
@@ -47,6 +50,7 @@ export interface ICreateAppOptions extends IGenerateAppsOptions {
   name?: string;
   redirectUris?: string;
   scopes?: string;
+  context?: AppContext;
 }
 
 export interface ICreateAppRequest {
@@ -54,4 +58,5 @@ export interface ICreateAppRequest {
   snykAppName: string;
   snykAppRedirectUris: string[];
   snykAppScopes: string[];
+  context?: AppContext;
 }

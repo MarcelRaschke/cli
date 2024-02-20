@@ -31,14 +31,19 @@ export async function makeRequestRest<T>(payload: any): Promise<T> {
       authorization: getAuthHeader(),
     };
     payload.json = true;
+    payload.parse = false; // do not use needle auto parser, using JSON.parse below
     request.makeRequest(payload, (error, res, body) => {
       if (error) {
         return reject(error);
       }
-      if (res.statusCode >= 400) {
+      if (res.statusCode === 400) {
         return reject({
           code: res.statusCode,
           body: JSON.parse(body as any),
+        });
+      } else if (res.statusCode >= 401) {
+        return reject({
+          code: res.statusCode,
         });
       }
       resolve(JSON.parse(body as any) as T);

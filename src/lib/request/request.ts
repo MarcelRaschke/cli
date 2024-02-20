@@ -30,7 +30,7 @@ function setupRequest(payload: Payload) {
 
   const versionNumber = getVersion();
   const body = payload.body;
-  let data;
+  let data = body;
 
   delete payload.body;
 
@@ -40,7 +40,10 @@ function setupRequest(payload: Payload) {
 
   payload.headers['x-snyk-cli-version'] = versionNumber;
 
-  if (body) {
+  const noCompression = payload.noCompression;
+
+  if (body && !noCompression) {
+    debug('compressing request body');
     const json = JSON.stringify(body);
     if (json.length < 1e4) {
       debug(JSON.stringify(body, null, 2));
@@ -104,7 +107,9 @@ function setupRequest(payload: Payload) {
       ? new http.Agent({ keepAlive: true })
       : new https.Agent({ keepAlive: true });
   const options: needle.NeedleOptions = {
+    use_proxy_from_env_var: false,
     json: payload.json,
+    parse: payload.parse,
     headers: payload.headers,
     timeout: payload.timeout,
     follow_max: 5,
@@ -134,6 +139,7 @@ export async function makeRequest(
   payload: Payload,
 ): Promise<{ res: needle.NeedleResponse; body: any }> {
   const { method, url, data, options } = setupRequest(payload);
+  debug(data);
 
   return new Promise((resolve, reject) => {
     needle.request(method, url, data, options, (err, res, respBody) => {

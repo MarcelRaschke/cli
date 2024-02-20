@@ -30,33 +30,45 @@ const snykIacTestErrorsUserMessages = {
   UnableToReadPath: 'Unable to read path',
   NoLoadableInput:
     "The Snyk CLI couldn't find any valid IaC configuration files to scan",
-  FailedToMakeResourcesResolvers:
-    'An error occurred preparing the requested cloud context. Please run the command again with the `-d` flag for more information.',
-  ResourcesResolverError:
-    'An error occurred scanning cloud resources. Please run the command again with the `-d` flag for more information.',
   FailedToProcessResults:
     'An error occurred while processing results. Please run the command again with the `-d` flag for more information.',
+  SubmoduleLoadingError: `Error loading submodule. Run 'terraform validate' to get more information`,
+  MissingRemoteSubmodulesError: `Could not load some remote modules. Run 'terraform init' if you would like to include them in the evaluation`,
+  EvaluationError: 'Skipping evaluation',
+  MissingTermError: 'Missing term - term has been assigned as the name itself',
 };
 
-export function getErrorUserMessage(code: number): string {
-  if (code < 2000 || code >= 3000) {
+export function getErrorUserMessage(code: number, error: string): string {
+  if (code < 2000 || code >= 4000) {
     return 'INVALID_SNYK_IAC_TEST_ERROR';
   }
   const errorName = IaCErrorCodes[code];
   if (!errorName) {
     return 'INVALID_IAC_ERROR';
   }
+
+  if (
+    code == IaCErrorCodes.FailedToMakeResourcesResolvers ||
+    code == IaCErrorCodes.ResourcesResolverError
+  ) {
+    return `${error}. Please run the command again with the \`-d\` flag for more information.`;
+  }
+
+  if (code == IaCErrorCodes.FeatureFlagNotEnabled) {
+    return error;
+  }
+
   return snykIacTestErrorsUserMessages[errorName];
 }
 
 export class SnykIacTestError extends CustomError {
-  public fields: { path: string; [key: string]: string };
+  public fields: { path: string; [key: string]: any };
 
   constructor(scanError: ScanError) {
     super(scanError.message);
     this.code = scanError.code;
     this.strCode = getErrorStringCode(this.code);
-    this.userMessage = getErrorUserMessage(this.code);
+    this.userMessage = getErrorUserMessage(this.code, scanError.message);
     this.fields = Object.assign(
       {
         path: '',

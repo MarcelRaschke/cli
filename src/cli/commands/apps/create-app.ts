@@ -30,18 +30,21 @@ export async function createApp(
     snykAppName: name,
     snykAppRedirectUris: redirectUris,
     snykAppScopes: scopes,
+    context,
   } = data;
   const payload = {
     method: 'POST',
     url: getAppsURL(EAppsURL.CREATE_APP, { orgId }),
     body: {
       name,
-      redirectUris,
+      redirect_uris: redirectUris,
       scopes,
+      context,
     },
     qs: {
-      version: '2021-08-11~experimental',
+      version: '2022-03-11~experimental',
     },
+    noCompression: true,
   };
 
   try {
